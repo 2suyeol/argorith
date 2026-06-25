@@ -619,11 +619,12 @@
   const codeData = {
     bubble: {
       pseudo: [
-        "① 배열의 맨 앞부터 한 칸씩 끝까지 살펴봅니다",
-        "  ② 바로 옆에 있는 두 수를 비교합니다",
-        "    ③ 왼쪽 수가 오른쪽 수보다 크다면",
-        "      ④ 두 수의 자리를 서로 바꿉니다",
-        "  ⑤ 한 바퀴를 다 돌면, 가장 큰 수가 맨 뒤로 이동해 있습니다"
+        "처음부터 끝까지 한 바퀴 돕니다",
+        "  옆자리 두 수를 차례로 봅니다",
+        "    두 수를 비교합니다",
+        "      크면 자리를 바꿉니다",
+        "    한 칸 옆으로 이동합니다",
+        "  가장 큰 수가 끝에 자리 잡았습니다"
       ],
       real: [
         "for (let i = 0; i < n - 1; i++) {",
@@ -637,12 +638,12 @@
     },
     selection: {
       pseudo: [
-        "① 아직 정렬 안 된 구간의 맨 앞에서 시작합니다",
-        "  ② 일단 맨 앞에 있는 수를 '가장 작은 수'라고 가정합니다",
-        "  ③ 남은 구간을 끝까지 하나씩 살펴봅니다",
-        "    ④ 지금 보는 수가 가정한 수보다 더 작다면",
-        "      ⑤ 그 수를 새로운 '가장 작은 수'로 바꿔둡니다",
-        "  ⑥ 다 살펴봤으면, 찾은 가장 작은 수를 맨 앞 자리로 보냅니다"
+        "정렬 안 된 구간을 봅니다",
+        "  일단 맨 앞을 최솟값으로 둡니다",
+        "  나머지를 하나씩 봅니다",
+        "    더 작은 값이면 최솟값을 바꿉니다",
+        "  (다 찾았습니다)",
+        "  최솟값을 맨 앞으로 보냅니다"
       ],
       real: [
         "for (let i = 0; i < n; i++) {",
@@ -656,11 +657,11 @@
     },
     insertion: {
       pseudo: [
-        "① 두 번째 수부터 마지막 수까지 하나씩 꺼내옵니다",
-        "  ② 꺼낸 수가 들어갈 위치를 찾으려고 합니다",
-        "    ③ 왼쪽에 있는 수가 더 크다면, 자리를 비교하며 계속 왼쪽으로 갑니다",
-        "      ④ 더 큰 수를 한 칸 오른쪽으로 밀어내고, 꺼낸 수를 그 자리에 넣습니다",
-        "      ⑤ 한 칸 더 왼쪽으로 이동해서 비교를 계속합니다"
+        "다음 수를 하나 꺼냅니다",
+        "  꺼낸 수의 위치를 찾습니다",
+        "  왼쪽이 더 크면 계속 비교합니다",
+        "    더 큰 수를 한 칸 밉니다",
+        "    한 칸 더 왼쪽으로 갑니다"
       ],
       real: [
         "for (let i = 1; i < n; i++) {",
@@ -674,16 +675,16 @@
     },
     quick: {
       pseudo: [
-        "① 정렬할 구간을 하나 정합니다",
-        "  ② 구간에 수가 하나뿐이거나 없으면, 이미 정렬된 것으로 보고 멈춥니다",
-        "  ③ 구간의 맨 마지막 수를 '기준값'으로 정합니다",
-        "  ④ 구간의 맨 앞에서부터 비교를 시작할 위치를 표시해 둡니다",
-        "  ⑤ 기준값을 뺀 나머지 수들을 하나씩 살펴봅니다",
-        "    ⑥ 살펴본 수가 기준값보다 작다면",
-        "      ⑦ 그 수를 표시해 둔 위치로 옮기고, 표시 위치를 한 칸 옮깁니다",
-        "  ⑧ 다 살펴봤으면, 기준값을 표시 위치로 옮겨 자리를 확정합니다",
-        "  ⑨ 기준값보다 작은 그룹에 대해 같은 과정을 다시 반복합니다",
-        "  ⑩ 기준값보다 큰 그룹에 대해서도 같은 과정을 다시 반복합니다"
+        "구간을 하나 정합니다",
+        "  수가 1개 이하면 끝냅니다",
+        "  맨 끝 수를 기준값으로 정합니다",
+        "  기준 자리를 표시해 둡니다",
+        "  나머지 수를 하나씩 봅니다",
+        "    기준값보다 작으면",
+        "      기준 자리로 옮깁니다",
+        "  기준값을 표시 자리로 보냅니다",
+        "  왼쪽 구간도 똑같이 합니다",
+        "  오른쪽 구간도 똑같이 합니다"
       ],
       real: [
         "function qsort(lo, hi) {",
@@ -703,12 +704,12 @@
     },
     merge: {
       pseudo: [
-        "① 정렬할 구간을 하나 정합니다",
-        "  ② 구간에 수가 하나뿐이거나 없으면, 이미 정렬된 것으로 보고 멈춥니다",
-        "  ③ 구간을 정확히 절반으로 나눕니다",
-        "  ④ 왼쪽 절반에 대해 같은 과정을 먼저 반복해 정렬합니다",
-        "  ⑤ 오른쪽 절반에 대해서도 같은 과정을 반복해 정렬합니다",
-        "  ⑥ 정렬된 두 절반을 앞에서부터 비교하며 하나로 합칩니다"
+        "구간을 하나 정합니다",
+        "  수가 1개 이하면 끝냅니다",
+        "  정확히 절반으로 나눕니다",
+        "  왼쪽 절반을 정렬합니다",
+        "  오른쪽 절반을 정렬합니다",
+        "  둘을 합쳐 정렬합니다"
       ],
       real: [
         "function mergeSort(lo, hi) {",
@@ -722,13 +723,14 @@
     },
     bfs: {
       pseudo: [
-        "① 시작 노드를 대기 줄(큐)에 올려두고, 방문 표시를 합니다",
-        "② 대기 줄에 노드가 남아있는 동안 계속 반복합니다",
-        "  ③ 대기 줄의 맨 앞에 있는 노드를 꺼내 방문합니다",
-        "  ④ 그 노드와 연결된 이웃들을 하나씩 살펴봅니다",
-        "    ⑤ 아직 방문하지 않은 이웃이라면",
-        "      ⑥ 방문 표시를 하고",
-        "      ⑦ 그 이웃을 대기 줄의 맨 뒤에 추가합니다"
+        "시작 노드를 큐에 넣습니다",
+        "방문 표시를 합니다",
+        "큐가 빌 때까지 반복합니다",
+        "  맨 앞 노드를 꺼내 방문합니다",
+        "  이웃들을 하나씩 봅니다",
+        "    안 가본 곳이면",
+        "      방문 표시를 합니다",
+        "      큐 뒤에 넣습니다"
       ],
       real: [
         "const visited = new Set([start]);",
@@ -746,14 +748,14 @@
     },
     dfs: {
       pseudo: [
-        "① 시작 노드를 임시 더미(스택)에 올려둡니다",
-        "② 더미에 노드가 남아있는 동안 계속 반복합니다",
-        "  ③ 더미의 맨 위에 있는 노드를 하나 꺼냅니다",
-        "  ④ 이미 방문했던 노드라면 건너뜁니다",
-        "  ⑤ 처음 방문하는 노드라면 방문 표시를 합니다",
-        "  ⑥ 그 노드와 연결된 이웃들을 하나씩 살펴봅니다",
-        "    ⑦ 아직 방문하지 않은 이웃이라면",
-        "      ⑧ 그 이웃을 더미의 맨 위에 쌓아 올립니다"
+        "시작 노드를 스택에 넣습니다",
+        "스택이 빌 때까지 반복합니다",
+        "  맨 위 노드를 꺼냅니다",
+        "  이미 가봤으면 건너뜁니다",
+        "  방문 표시를 합니다",
+        "  이웃들을 하나씩 봅니다",
+        "    안 가본 곳이면",
+        "      스택 위에 쌓습니다"
       ],
       real: [
         "const visited = new Set();",
@@ -770,13 +772,14 @@
     },
     dijkstra: {
       pseudo: [
-        "① 시작 노드까지의 거리는 0, 나머지는 '아직 모름(∞)'으로 둡니다",
-        "② 모든 노드의 최종 거리가 확정될 때까지 반복합니다",
-        "  ③ 아직 확정 안 된 노드 중, 지금까지 거리가 가장 짧은 노드를 고릅니다",
-        "  ④ 그 노드의 거리를 최종 확정합니다",
-        "  ⑤ 확정한 노드와 연결된 이웃들을 하나씩 살펴봅니다",
-        "    ⑥ 그 노드를 거쳐가는 게 기존 경로보다 더 짧다면",
-        "      ⑦ 이웃까지의 거리를 더 짧은 값으로 갈아 끼웁니다"
+        "모든 거리를 무한대로 둡니다",
+        "시작 노드는 거리 0입니다",
+        "다 확정될 때까지 반복합니다",
+        "  가장 가까운 노드를 고릅니다",
+        "  그 노드를 확정합니다",
+        "  이웃들을 하나씩 봅니다",
+        "    더 가까운 길이면",
+        "      거리를 갈아끼웁니다"
       ],
       real: [
         "const dist = Array(n).fill(Infinity);",
@@ -900,7 +903,7 @@
           }
         }
         done.unshift(n-1-i);
-        snapshot({doneIdx: done.slice(), codeLine:4, note: `${n-1-i}번째 자리 확정`});
+        snapshot({doneIdx: done.slice(), codeLine:5, note: `${n-1-i}번째 자리 확정`});
       }
       snapshot({doneIdx: Array.from({length:n}, (_,k)=>k), note:"정렬 완료"});
     }
@@ -1068,18 +1071,18 @@
     if(algo === "bfs"){
       const visited = new Set([start]);
       const queue = [start];
-      snapshot({ visitedSet:[start], queue:queue.slice(), codeLine:0, note:`시작 노드 ${start}를 큐에 추가` });
+      snapshot({ visitedSet:[start], queue:queue.slice(), codeLine:1, note:`시작 노드 ${start}를 큐에 추가` });
       while(queue.length){
         const node = queue.shift();
         visitedCount++;
-        snapshot({ visitedSet:Array.from(visited), currentNode:node, queue:queue.slice(), visitedCount, codeLine:2, note:`노드 ${node} 방문 (큐에서 꺼냄)` });
+        snapshot({ visitedSet:Array.from(visited), currentNode:node, queue:queue.slice(), visitedCount, codeLine:3, note:`노드 ${node} 방문 (큐에서 꺼냄)` });
         const neighbors = adj[node].map(e=>e.to).sort((a,b)=>a-b);
         for(const next of neighbors){
           edgeCount++;
           if(!visited.has(next)){
             visited.add(next);
             queue.push(next);
-            snapshot({ visitedSet:Array.from(visited), currentNode:node, queue:queue.slice(), edgeCount, codeLine:6, note:`이웃 ${next} 발견 → 큐에 추가` });
+            snapshot({ visitedSet:Array.from(visited), currentNode:node, queue:queue.slice(), edgeCount, codeLine:7, note:`이웃 ${next} 발견 → 큐에 추가` });
           } else {
             snapshot({ visitedSet:Array.from(visited), currentNode:node, queue:queue.slice(), edgeCount, codeLine:4, note:`이웃 ${next}는 이미 방문함` });
           }
@@ -1118,14 +1121,14 @@
       const dist = Array(n).fill(Infinity);
       dist[start] = 0;
       const finalized = new Set();
-      snapshot({ dist:dist.slice(), finalSet:[], codeLine:0, note:`시작 노드 ${start}의 거리를 0으로 초기화` });
+      snapshot({ dist:dist.slice(), finalSet:[], codeLine:1, note:`시작 노드 ${start}의 거리를 0으로 초기화` });
       while(finalized.size < n){
         let u = -1, best = Infinity;
         for(let i=0;i<n;i++) if(!finalized.has(i) && dist[i] < best){ best = dist[i]; u = i; }
         if(u === -1) break;
         finalized.add(u);
         visitedCount++;
-        snapshot({ dist:dist.slice(), finalSet:Array.from(finalized), currentNode:u, visitedCount, codeLine:3, note:`거리가 가장 짧은 노드 ${u}(거리 ${dist[u]}) 확정` });
+        snapshot({ dist:dist.slice(), finalSet:Array.from(finalized), currentNode:u, visitedCount, codeLine:4, note:`거리가 가장 짧은 노드 ${u}(거리 ${dist[u]}) 확정` });
         const neighbors = adj[u].slice().sort((a,b)=>a.to-b.to);
         for(const {to, weight} of neighbors){
           edgeCount++;
@@ -1134,9 +1137,9 @@
           if(newDist < dist[to]){
             const old = dist[to];
             dist[to] = newDist;
-            snapshot({ dist:dist.slice(), finalSet:Array.from(finalized), currentNode:u, edgeCount, codeLine:6, note:`${u}→${to} 경로로 거리 갱신: ${old===Infinity?"∞":old} → ${newDist}` });
+            snapshot({ dist:dist.slice(), finalSet:Array.from(finalized), currentNode:u, edgeCount, codeLine:7, note:`${u}→${to} 경로로 거리 갱신: ${old===Infinity?"∞":old} → ${newDist}` });
           } else {
-            snapshot({ dist:dist.slice(), finalSet:Array.from(finalized), currentNode:u, edgeCount, codeLine:5, note:`${u}→${to}: 기존 거리(${dist[to]})가 더 짧아 갱신 안 함` });
+            snapshot({ dist:dist.slice(), finalSet:Array.from(finalized), currentNode:u, edgeCount, codeLine:6, note:`${u}→${to}: 기존 거리(${dist[to]})가 더 짧아 갱신 안 함` });
           }
         }
       }
