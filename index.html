@@ -46,7 +46,18 @@
     letter-spacing:0.12em;
     color:var(--ink-soft);
     text-transform:uppercase;
+    display:flex;
+    align-items:center;
+    gap:10px;
   }
+  .eyebrow a{
+    color:var(--ink-soft);
+    text-decoration:none;
+    border-bottom:1px dashed var(--line);
+    text-transform:none;
+    letter-spacing:0;
+  }
+  .eyebrow a:hover{ color:var(--ink); }
   h1{
     font-size:28px;
     font-weight:700;
@@ -324,7 +335,7 @@
 <body>
 <div class="wrap">
   <header>
-    <div class="eyebrow">Algorithm Visualizer — Stage 1</div>
+    <div class="eyebrow">Algorithm Visualizer — Stage 1 · <a href="./graph.html">그래프 탐색 보러가기 →</a></div>
     <h1>정렬 알고리즘 시각화</h1>
     <div class="algo-tabs" role="tablist" aria-label="정렬 알고리즘 선택">
       <button class="algo-tab active" data-algo="bubble">버블 정렬</button>
