@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>알고리즘 시각화 — 정렬</title>
+<title>알고리즘 시각화</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" as="style" crossorigin
   href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
@@ -19,6 +19,7 @@
     --compare:#D98E48;
     --swap:#B5483A;
     --done:#5B8C6E;
+    --frontier:#C9A876;
     --mono:'IBM Plex Mono', monospace;
     --sans:'Pretendard', sans-serif;
   }
@@ -36,8 +37,7 @@
     padding:48px 24px 96px;
   }
   header{
-    margin-bottom:36px;
-    border-bottom:1px solid var(--line);
+    margin-bottom:0;
     padding-bottom:24px;
   }
   .eyebrow{
@@ -46,28 +46,46 @@
     letter-spacing:0.12em;
     color:var(--ink-soft);
     text-transform:uppercase;
-    display:flex;
-    align-items:center;
-    gap:10px;
   }
-  .eyebrow a{
-    color:var(--ink-soft);
-    text-decoration:none;
-    border-bottom:1px dashed var(--line);
-    text-transform:none;
-    letter-spacing:0;
-  }
-  .eyebrow a:hover{ color:var(--ink); }
   h1{
     font-size:28px;
     font-weight:700;
     margin:8px 0 0;
     letter-spacing:-0.01em;
   }
+
+  /* 카테고리 탭 (1단계: 정렬 / 그래프) */
+  .category-tabs{
+    display:flex;
+    gap:8px;
+    margin-top:28px;
+    border-bottom:1px solid var(--line);
+    padding-bottom:0;
+  }
+  .category-tab{
+    font-family:var(--sans);
+    font-size:15px;
+    font-weight:600;
+    padding:10px 18px 12px;
+    border:none;
+    background:transparent;
+    color:var(--ink-soft);
+    cursor:pointer;
+    border-bottom:3px solid transparent;
+    margin-bottom:-1px;
+    transition:all .15s ease;
+  }
+  .category-tab:hover{ color:var(--ink); }
+  .category-tab.active{
+    color:var(--ink);
+    border-bottom-color:var(--ink);
+  }
+
+  /* 세부 알고리즘 탭 (2단계) */
   .algo-tabs{
     display:flex;
     gap:6px;
-    margin-top:24px;
+    margin-top:18px;
     flex-wrap:wrap;
   }
   .algo-tab{
@@ -166,6 +184,7 @@
     margin-top:28px;
   }
 
+  /* ---- 정렬용 막대그래프 ---- */
   .bars{
     position:relative;
     height:280px;
@@ -201,20 +220,77 @@
   }
   .bar.compare .bar-val, .bar.swap .bar-val{ color:var(--ink); font-weight:600; }
 
-  .arc-layer{
-    position:absolute;
-    top:-26px; left:0; right:0; height:24px;
-    pointer-events:none;
+  /* ---- 그래프용 캔버스 ---- */
+  .graph-area{
+    position:relative;
+    width:100%;
+    height:280px;
   }
-  .arc{
-    position:absolute;
-    height:18px;
-    border-top:2px solid var(--compare);
-    border-radius:50%;
-    opacity:0;
-    transition:opacity .2s ease;
+  .graph-area canvas{
+    width:100%;
+    height:100%;
+    display:block;
   }
-  .arc.show{ opacity:1; }
+
+  .dist-panel{
+    margin-top:18px;
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .dist-chip{
+    font-family:var(--mono);
+    font-size:12px;
+    padding:6px 10px;
+    border:1px solid var(--line);
+    border-radius:7px;
+    color:var(--ink-soft);
+    background:var(--paper);
+  }
+  .dist-chip b{ color:var(--ink); margin-left:4px; }
+  .dist-chip.updated{ border-color:var(--compare); color:var(--ink); }
+  .dist-chip.final{ border-color:var(--done); }
+
+  .queue-panel{
+    margin-top:18px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .queue-label{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--ink-soft);
+    white-space:nowrap;
+  }
+  .queue-items{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+  }
+  .queue-chip{
+    font-family:var(--mono);
+    font-size:12px;
+    padding:5px 10px;
+    border-radius:6px;
+    background:var(--paper);
+    border:1px solid var(--line);
+    color:var(--ink-soft);
+  }
+  .queue-chip.head{
+    background:var(--compare);
+    color:var(--paper);
+    border-color:var(--compare);
+  }
+
+  .narration{
+    margin-top:16px;
+    font-size:14px;
+    color:var(--ink-soft);
+    min-height:20px;
+  }
+  .narration b{ color:var(--ink); }
 
   .controls{
     display:flex;
@@ -241,7 +317,7 @@
     color:var(--ink);
   }
   .btn:disabled{ opacity:.35; cursor:not-allowed; }
-  .btn:focus-visible, .algo-tab:focus-visible, input:focus-visible{
+  .btn:focus-visible, .algo-tab:focus-visible, .category-tab:focus-visible, input:focus-visible{
     outline:2px solid var(--swap);
     outline-offset:2px;
   }
@@ -292,14 +368,6 @@
     margin-top:2px;
   }
 
-  .narration{
-    margin-top:16px;
-    font-size:14px;
-    color:var(--ink-soft);
-    min-height:20px;
-  }
-  .narration b{ color:var(--ink); }
-
   .regen-row{
     display:flex;
     gap:10px;
@@ -322,12 +390,13 @@
   }
 
   @media (prefers-reduced-motion: reduce){
-    .bar-fill, .bar{ transition:none !important; }
+    *{ transition:none !important; }
   }
 
   @media (max-width:600px){
     .bars{ height:200px; gap:3px; }
     .bar-val{ font-size:9px; }
+    .graph-area{ height:240px; }
     h1{ font-size:22px; }
   }
 </style>
@@ -335,20 +404,22 @@
 <body>
 <div class="wrap">
   <header>
-    <div class="eyebrow">Algorithm Visualizer — Stage 1 · <a href="./graph.html">그래프 탐색 보러가기 →</a></div>
-    <h1>정렬 알고리즘 시각화</h1>
-    <div class="algo-tabs" role="tablist" aria-label="정렬 알고리즘 선택">
-      <button class="algo-tab active" data-algo="bubble">버블 정렬</button>
-      <button class="algo-tab" data-algo="selection">선택 정렬</button>
-      <button class="algo-tab" data-algo="insertion">삽입 정렬</button>
-      <button class="algo-tab" data-algo="quick">퀵 정렬</button>
-      <button class="algo-tab" data-algo="merge">병합 정렬</button>
+    <div class="eyebrow">Algorithm Visualizer</div>
+    <h1 id="pageTitle">알고리즘 시각화</h1>
+
+    <div class="category-tabs" role="tablist" aria-label="카테고리 선택">
+      <button class="category-tab active" data-category="sort">정렬</button>
+      <button class="category-tab" data-category="graph">그래프 탐색</button>
+    </div>
+
+    <div class="algo-tabs" id="algoTabs" role="tablist" aria-label="알고리즘 선택">
+      <!-- JS로 채워짐 -->
     </div>
   </header>
 
   <div class="explain-box">
     <div class="explain-head">
-      <span class="explain-title" id="explainTitle">버블 정렬</span>
+      <span class="explain-title" id="explainTitle"></span>
       <div class="explain-toggle" role="tablist" aria-label="설명 분량 선택">
         <button class="explain-toggle-btn active" data-mode="simple">간단히</button>
         <button class="explain-toggle-btn" data-mode="detail">자세히</button>
@@ -359,7 +430,18 @@
   </div>
 
   <div class="stage">
+    <!-- 정렬용 -->
     <div class="bars" id="bars"></div>
+    <!-- 그래프용 -->
+    <div class="graph-area" id="graphArea" style="display:none;">
+      <canvas id="graphCanvas"></canvas>
+    </div>
+
+    <div class="queue-panel" id="queuePanel" style="display:none;">
+      <span class="queue-label" id="queueLabel">큐</span>
+      <div class="queue-items" id="queueItems"></div>
+    </div>
+    <div class="dist-panel" id="distPanel" style="display:none;"></div>
 
     <div class="narration" id="narration">재생을 눌러 시작하세요.</div>
 
@@ -380,16 +462,21 @@
       </div>
     </div>
 
-    <div class="meta-row">
+    <div class="meta-row" id="metaRowSort">
       <div class="meta">비교 횟수<b id="metaCompare">0</b></div>
       <div class="meta">교환 횟수<b id="metaSwap">0</b></div>
       <div class="meta">실제 비교 / 이론값<b id="metaComplexity">—</b></div>
     </div>
+    <div class="meta-row" id="metaRowGraph" style="display:none;">
+      <div class="meta">방문한 노드<b id="metaVisited">0</b></div>
+      <div class="meta">탐색한 엣지<b id="metaEdges">0</b></div>
+      <div class="meta">시간복잡도<b id="metaGraphComplexity">—</b></div>
+    </div>
 
     <div class="regen-row">
-      <label for="sizeInput">배열 크기</label>
+      <label for="sizeInput" id="sizeLabel">배열 크기</label>
       <input type="number" id="sizeInput" min="5" max="40" value="20">
-      <button class="btn ghost" id="btnShuffle">🔀 새 배열</button>
+      <button class="btn ghost" id="btnShuffle">🔀 새로 생성</button>
     </div>
   </div>
 </div>
@@ -398,83 +485,54 @@
 (function(){
   "use strict";
 
-  // ---------- 상태 ----------
-  let array = [];
-  let steps = [];      // 스텝 기반 재생: 각 스텝은 {array, compareIdx:[], swapIdx:[], doneIdx:[], compareCount, swapCount, note}
+  // ===================================================================
+  // 공통 상태
+  // ===================================================================
+  let category = "sort";       // "sort" | "graph"
+  let currentAlgo = "bubble";
+  let explainMode = "simple";
+  let steps = [];
   let cur = 0;
   let playing = false;
   let timer = null;
-  let currentAlgo = "bubble";
 
-  // 이론적 예상 비교 횟수를 n으로부터 직접 계산 (고정 텍스트가 아니라 실제 산식 적용)
-  // 알고리즘 설명 데이터 (간단/상세 + 시간·공간복잡도 + 특징)
-  const explainData = {
-    bubble: {
-      title: "버블 정렬 (Bubble Sort)",
-      simple: "이웃한 두 원소를 끝까지 비교하며, 더 큰 값을 뒤로 한 칸씩 밀어내는 방식이에요. 마치 거품이 위로 떠오르듯 큰 값이 뒤로 이동합니다.",
-      detail: "배열을 처음부터 끝까지 훑으면서 이웃한 두 원소를 비교해, 순서가 잘못되어 있으면 즉시 교환합니다. 한 번 끝까지 훑으면 가장 큰 값이 맨 뒤로 확정되고, 이 과정을 배열 끝에서부터 한 칸씩 줄여가며 반복합니다. 구현이 단순해 교육용으로 많이 쓰이지만, 비교·교환이 매번 일어나 큰 데이터에는 비효율적입니다.",
-      time: "O(n²)",
-      space: "O(1)",
-      stable: "안정 정렬",
-      trait: "구현이 가장 단순, 실무에선 거의 쓰지 않음"
-    },
-    selection: {
-      title: "선택 정렬 (Selection Sort)",
-      simple: "남은 구간에서 가장 작은 값을 찾아 맨 앞으로 보내는 걸 반복해요. '가장 작은 걸 골라 앞에 놓기'가 핵심입니다.",
-      detail: "정렬되지 않은 구간 전체를 탐색해 최솟값의 위치를 찾고, 그 값을 구간의 맨 앞 원소와 교환합니다. 교환은 구간당 최대 1번만 일어나 교환 횟수가 적다는 게 장점이지만, 비교는 매번 구간 전체를 훑어야 해서 비교 횟수는 버블 정렬과 같습니다.",
-      time: "O(n²)",
-      space: "O(1)",
-      stable: "불안정 정렬",
-      trait: "교환 횟수가 적어 쓰기 비용이 큰 데이터에 유리"
-    },
-    insertion: {
-      title: "삽입 정렬 (Insertion Sort)",
-      simple: "이미 정렬된 부분에 새 원소를 적절한 위치까지 밀어 넣는 방식이에요. 카드를 손에 쥐고 한 장씩 정렬하는 느낌입니다.",
-      detail: "왼쪽부터 차례로 '정렬된 부분'을 늘려가며, 새로 추가되는 원소를 정렬된 부분 안에서 올바른 위치까지 한 칸씩 이동시켜 끼워 넣습니다. 데이터가 이미 거의 정렬되어 있을 경우 비교·교환이 거의 일어나지 않아 O(n)에 가까운 성능을 보이는 것이 특징이며, 작은 데이터셋에서는 다른 O(n log n) 알고리즘보다도 실제로 빠른 경우가 많습니다.",
-      time: "최선 O(n) · 평균/최악 O(n²)",
-      space: "O(1)",
-      stable: "안정 정렬",
-      trait: "거의 정렬된 데이터에 특히 강함"
-    },
-    quick: {
-      title: "퀵 정렬 (Quick Sort)",
-      simple: "기준값(피벗)을 하나 정해, 그보다 작은 값과 큰 값으로 나눈 뒤 각 그룹을 다시 같은 방식으로 정렬해요.",
-      detail: "배열에서 피벗을 하나 선택하고, 피벗보다 작은 값은 왼쪽, 큰 값은 오른쪽으로 분할(partition)합니다. 분할이 끝나면 피벗은 최종 위치에 확정되고, 왼쪽과 오른쪽 구간에 대해 같은 과정을 재귀적으로 반복합니다. 평균적으로 매우 빠르지만, 피벗 선택이 계속 한쪽으로 치우치면(이미 정렬된 배열에서 마지막 원소를 피벗으로 고르는 경우 등) 최악의 경우 O(n²)까지 떨어질 수 있습니다.",
-      time: "평균 O(n log n) · 최악 O(n²)",
-      space: "O(log n)",
-      stable: "불안정 정렬",
-      trait: "실무에서 가장 널리 쓰이는 범용 정렬"
-    },
-    merge: {
-      title: "병합 정렬 (Merge Sort)",
-      simple: "배열을 반으로 쪼개고 쪼개서 더 이상 못 쪼갤 때까지 나눈 다음, 다시 합치면서 정렬해요. 나눠서 정복하는 방식입니다.",
-      detail: "배열을 절반씩 재귀적으로 분할해 더 이상 나눌 수 없는 단일 원소까지 쪼갠 뒤, 두 개의 정렬된 부분 배열을 비교하며 하나로 합치는(merge) 과정을 반복합니다. 분할과 병합이 항상 균등하게 일어나기 때문에 입력 데이터의 상태와 무관하게 항상 O(n log n)을 보장하는 것이 가장 큰 장점이며, 안정 정렬이라 같은 값의 원래 순서가 유지됩니다. 다만 병합 과정에서 추가 배열 공간이 필요합니다.",
-      time: "O(n log n) (항상 보장)",
-      space: "O(n)",
-      stable: "안정 정렬",
-      trait: "성능이 입력 상태에 영향받지 않음"
-    }
-  };
-  let explainMode = "simple"; // "simple" | "detail"
+  // 정렬 상태
+  let array = [];
+  // 그래프 상태
+  let nodes = [], edges = [], adj = [];
+  let startNode = 0;
 
-  const complexityFormula = {
-    bubble:    { label: "O(n²)",         calc: n => Math.round(n*(n-1)/2) },
-    selection: { label: "O(n²)",         calc: n => Math.round(n*(n-1)/2) },
-    insertion: { label: "O(n²) 평균",     calc: n => Math.round(n*(n-1)/4) }, // 평균 케이스 근사: 최악(n²/2)의 절반
-    quick:     { label: "O(n log n) 평균", calc: n => Math.round(n*Math.log2(Math.max(n,2))) },
-    merge:     { label: "O(n log n)",     calc: n => Math.round(n*Math.log2(Math.max(n,2))) }
-  };
-
-  // ---------- DOM ----------
+  // ===================================================================
+  // DOM 참조
+  // ===================================================================
+  const pageTitleEl = document.getElementById("pageTitle");
+  const algoTabsEl = document.getElementById("algoTabs");
   const barsEl = document.getElementById("bars");
+  const graphAreaEl = document.getElementById("graphArea");
+  const canvas = document.getElementById("graphCanvas");
+  const ctx = canvas.getContext("2d");
+
   const narrationEl = document.getElementById("narration");
   const scrubEl = document.getElementById("scrub");
   const stepLabelEl = document.getElementById("stepLabel");
   const speedEl = document.getElementById("speed");
+
+  const metaRowSortEl = document.getElementById("metaRowSort");
+  const metaRowGraphEl = document.getElementById("metaRowGraph");
   const metaCompareEl = document.getElementById("metaCompare");
   const metaSwapEl = document.getElementById("metaSwap");
   const metaComplexityEl = document.getElementById("metaComplexity");
+  const metaVisitedEl = document.getElementById("metaVisited");
+  const metaEdgesEl = document.getElementById("metaEdges");
+  const metaGraphComplexityEl = document.getElementById("metaGraphComplexity");
+
   const sizeInputEl = document.getElementById("sizeInput");
+  const sizeLabelEl = document.getElementById("sizeLabel");
+  const queuePanelEl = document.getElementById("queuePanel");
+  const queueLabelEl = document.getElementById("queueLabel");
+  const queueItemsEl = document.getElementById("queueItems");
+  const distPanelEl = document.getElementById("distPanel");
+
   const explainTitleEl = document.getElementById("explainTitle");
   const explainBodyEl = document.getElementById("explainBody");
   const explainMetaEl = document.getElementById("explainMeta");
@@ -485,27 +543,112 @@
   const btnReset = document.getElementById("btnReset");
   const btnShuffle = document.getElementById("btnShuffle");
 
-  // ---------- 배열 생성 ----------
+  // ===================================================================
+  // 알고리즘 목록 / 설명 데이터
+  // ===================================================================
+  const algoList = {
+    sort: [
+      { key:"bubble", label:"버블 정렬" },
+      { key:"selection", label:"선택 정렬" },
+      { key:"insertion", label:"삽입 정렬" },
+      { key:"quick", label:"퀵 정렬" },
+      { key:"merge", label:"병합 정렬" }
+    ],
+    graph: [
+      { key:"bfs", label:"BFS" },
+      { key:"dfs", label:"DFS" },
+      { key:"dijkstra", label:"다익스트라" }
+    ]
+  };
+
+  const explainData = {
+    bubble: {
+      title: "버블 정렬 (Bubble Sort)",
+      simple: "이웃한 두 원소를 끝까지 비교하며, 더 큰 값을 뒤로 한 칸씩 밀어내는 방식이에요. 마치 거품이 위로 떠오르듯 큰 값이 뒤로 이동합니다.",
+      detail: "배열을 처음부터 끝까지 훑으면서 이웃한 두 원소를 비교해, 순서가 잘못되어 있으면 즉시 교환합니다. 한 번 끝까지 훑으면 가장 큰 값이 맨 뒤로 확정되고, 이 과정을 배열 끝에서부터 한 칸씩 줄여가며 반복합니다. 구현이 단순해 교육용으로 많이 쓰이지만, 비교·교환이 매번 일어나 큰 데이터에는 비효율적입니다.",
+      time: "O(n²)", space: "O(1)", stable: "안정 정렬",
+      trait: "구현이 가장 단순, 실무에선 거의 쓰지 않음"
+    },
+    selection: {
+      title: "선택 정렬 (Selection Sort)",
+      simple: "남은 구간에서 가장 작은 값을 찾아 맨 앞으로 보내는 걸 반복해요. '가장 작은 걸 골라 앞에 놓기'가 핵심입니다.",
+      detail: "정렬되지 않은 구간 전체를 탐색해 최솟값의 위치를 찾고, 그 값을 구간의 맨 앞 원소와 교환합니다. 교환은 구간당 최대 1번만 일어나 교환 횟수가 적다는 게 장점이지만, 비교는 매번 구간 전체를 훑어야 해서 비교 횟수는 버블 정렬과 같습니다.",
+      time: "O(n²)", space: "O(1)", stable: "불안정 정렬",
+      trait: "교환 횟수가 적어 쓰기 비용이 큰 데이터에 유리"
+    },
+    insertion: {
+      title: "삽입 정렬 (Insertion Sort)",
+      simple: "이미 정렬된 부분에 새 원소를 적절한 위치까지 밀어 넣는 방식이에요. 카드를 손에 쥐고 한 장씩 정렬하는 느낌입니다.",
+      detail: "왼쪽부터 차례로 '정렬된 부분'을 늘려가며, 새로 추가되는 원소를 정렬된 부분 안에서 올바른 위치까지 한 칸씩 이동시켜 끼워 넣습니다. 데이터가 이미 거의 정렬되어 있을 경우 비교·교환이 거의 일어나지 않아 O(n)에 가까운 성능을 보이는 것이 특징이며, 작은 데이터셋에서는 다른 O(n log n) 알고리즘보다도 실제로 빠른 경우가 많습니다.",
+      time: "최선 O(n) · 평균/최악 O(n²)", space: "O(1)", stable: "안정 정렬",
+      trait: "거의 정렬된 데이터에 특히 강함"
+    },
+    quick: {
+      title: "퀵 정렬 (Quick Sort)",
+      simple: "기준값(피벗)을 하나 정해, 그보다 작은 값과 큰 값으로 나눈 뒤 각 그룹을 다시 같은 방식으로 정렬해요.",
+      detail: "배열에서 피벗을 하나 선택하고, 피벗보다 작은 값은 왼쪽, 큰 값은 오른쪽으로 분할(partition)합니다. 분할이 끝나면 피벗은 최종 위치에 확정되고, 왼쪽과 오른쪽 구간에 대해 같은 과정을 재귀적으로 반복합니다. 평균적으로 매우 빠르지만, 피벗 선택이 계속 한쪽으로 치우치면(이미 정렬된 배열에서 마지막 원소를 피벗으로 고르는 경우 등) 최악의 경우 O(n²)까지 떨어질 수 있습니다.",
+      time: "평균 O(n log n) · 최악 O(n²)", space: "O(log n)", stable: "불안정 정렬",
+      trait: "실무에서 가장 널리 쓰이는 범용 정렬"
+    },
+    merge: {
+      title: "병합 정렬 (Merge Sort)",
+      simple: "배열을 반으로 쪼개고 쪼개서 더 이상 못 쪼갤 때까지 나눈 다음, 다시 합치면서 정렬해요. 나눠서 정복하는 방식입니다.",
+      detail: "배열을 절반씩 재귀적으로 분할해 더 이상 나눌 수 없는 단일 원소까지 쪼갠 뒤, 두 개의 정렬된 부분 배열을 비교하며 하나로 합치는(merge) 과정을 반복합니다. 분할과 병합이 항상 균등하게 일어나기 때문에 입력 데이터의 상태와 무관하게 항상 O(n log n)을 보장하는 것이 가장 큰 장점이며, 안정 정렬이라 같은 값의 원래 순서가 유지됩니다. 다만 병합 과정에서 추가 배열 공간이 필요합니다.",
+      time: "O(n log n) (항상 보장)", space: "O(n)", stable: "안정 정렬",
+      trait: "성능이 입력 상태에 영향받지 않음"
+    },
+    bfs: {
+      title: "BFS (너비 우선 탐색, Breadth-First Search)",
+      simple: "시작 노드에서 가까운 노드부터 한 단계씩 넓게 퍼져나가며 탐색해요. 큐(Queue)를 사용해 먼저 발견한 노드를 먼저 방문합니다.",
+      detail: "시작 노드를 큐에 넣고, 큐에서 하나씩 꺼내며 아직 방문하지 않은 이웃 노드를 모두 큐에 추가합니다. 먼저 들어온 노드를 먼저 꺼내는 FIFO 구조 덕분에, 같은 거리(단계)에 있는 노드들을 모두 방문한 뒤에야 다음 단계로 넘어갑니다. 이 특성 때문에 '가중치 없는 그래프에서의 최단 경로'를 찾을 때 사용됩니다.",
+      time: "O(V + E)", space: "O(V)", structure: "큐 (Queue, FIFO)",
+      trait: "가중치 없는 그래프의 최단 경로 탐색에 적합"
+    },
+    dfs: {
+      title: "DFS (깊이 우선 탐색, Depth-First Search)",
+      simple: "한 방향으로 갈 수 있는 만큼 끝까지 깊이 들어갔다가, 더 갈 곳이 없으면 되돌아와 다른 길을 탐색해요. 스택(Stack)이나 재귀로 구현합니다.",
+      detail: "시작 노드에서 출발해 방문하지 않은 이웃 하나를 골라 그 노드로 이동하고, 다시 그 노드의 이웃을 탐색하는 방식으로 한 경로를 끝까지 파고듭니다. 더 이상 갈 곳이 없으면 이전 노드로 되돌아가(백트래킹) 다른 경로를 시도합니다. 재귀 호출 또는 스택(LIFO)으로 구현되며, 그래프의 연결 요소 확인이나 사이클 탐지, 위상 정렬의 기반이 됩니다.",
+      time: "O(V + E)", space: "O(V)", structure: "스택 (Stack, LIFO) 또는 재귀",
+      trait: "경로 탐색·사이클 탐지·위상 정렬의 기초"
+    },
+    dijkstra: {
+      title: "다익스트라 (Dijkstra's Algorithm)",
+      simple: "가중치가 있는 그래프에서, 시작 노드로부터 각 노드까지의 '가장 짧은 거리'를 찾아요. 항상 지금까지 발견한 거리 중 가장 짧은 노드를 먼저 확정합니다.",
+      detail: "시작 노드의 거리를 0으로, 나머지는 무한대로 초기화한 뒤, 아직 확정되지 않은 노드 중 거리가 가장 짧은 노드를 선택해 확정합니다. 확정된 노드를 거쳐 이웃 노드로 가는 거리가 기존에 기록된 거리보다 짧다면 갱신(완화, relaxation)합니다. 이 과정을 모든 노드가 확정될 때까지 반복하며, 음수 가중치가 없는 그래프에서 항상 정확한 최단 거리를 보장합니다.",
+      time: "O((V+E) log V) (우선순위 큐 사용 시)", space: "O(V)", structure: "우선순위 큐 (Priority Queue)",
+      trait: "음수 가중치가 없는 가중 그래프의 최단 경로"
+    }
+  };
+
+  const complexityFormula = {
+    bubble:    { label: "O(n²)",         calc: n => Math.round(n*(n-1)/2) },
+    selection: { label: "O(n²)",         calc: n => Math.round(n*(n-1)/2) },
+    insertion: { label: "O(n²) 평균",     calc: n => Math.round(n*(n-1)/4) },
+    quick:     { label: "O(n log n) 평균", calc: n => Math.round(n*Math.log2(Math.max(n,2))) },
+    merge:     { label: "O(n log n)",     calc: n => Math.round(n*Math.log2(Math.max(n,2))) }
+  };
+  const graphComplexityLabel = {
+    bfs: "O(V + E)", dfs: "O(V + E)", dijkstra: "O((V+E) log V)"
+  };
+
+  // ===================================================================
+  // 정렬: 배열 생성 + 스텝 빌더
+  // ===================================================================
   function genArray(n){
     const arr = [];
     for(let i=0;i<n;i++) arr.push(Math.floor(Math.random()*94)+5);
     return arr;
   }
 
-  // ---------- 스텝 빌더: 알고리즘은 "스텝 로그"만 생성, 실제 그리기는 별도 ----------
-  function buildSteps(algo, inputArr){
+  function buildSortSteps(algo, inputArr){
     const arr = inputArr.slice();
     const log = [];
     let compareCount = 0, swapCount = 0;
 
     function snapshot(extra){
       log.push(Object.assign({
-        array: arr.slice(),
-        compareIdx: [],
-        swapIdx: [],
-        doneIdx: extra && extra.doneIdx ? extra.doneIdx : [],
-        compareCount, swapCount,
-        note: ""
+        array: arr.slice(), compareIdx: [], swapIdx: [], doneIdx: extra && extra.doneIdx ? extra.doneIdx : [],
+        compareCount, swapCount, note: ""
       }, extra || {}));
     }
 
@@ -513,7 +656,6 @@
       const n = arr.length;
       const done = [];
       for(let i=0;i<n-1;i++){
-        let swappedAny = false;
         for(let j=0;j<n-1-i;j++){
           compareCount++;
           snapshot({compareIdx:[j,j+1], doneIdx: done.slice(), note: `${arr[j]}와 ${arr[j+1]} 비교`});
@@ -526,7 +668,6 @@
         done.unshift(n-1-i);
         snapshot({doneIdx: done.slice(), note: `${n-1-i}번째 자리 확정`});
       }
-      done.unshift(0);
       snapshot({doneIdx: Array.from({length:n}, (_,k)=>k), note:"정렬 완료"});
     }
 
@@ -633,7 +774,147 @@
     return log;
   }
 
-  // ---------- 렌더링 ----------
+  // ===================================================================
+  // 그래프: 생성 + 스텝 빌더
+  // ===================================================================
+  function genGraph(n){
+    const newNodes = [];
+    const cx = 0.5, cy = 0.5, r = 0.4;
+    for(let i=0;i<n;i++){
+      const angle = (Math.PI*2*i/n) - Math.PI/2;
+      newNodes.push({ id:i, x: cx + r*Math.cos(angle), y: cy + r*Math.sin(angle) });
+    }
+    const newEdges = [];
+    const edgeSet = new Set();
+    function addEdge(a,b){
+      const key = a<b ? a+"_"+b : b+"_"+a;
+      if(edgeSet.has(key) || a===b) return false;
+      edgeSet.add(key);
+      newEdges.push({a, b, weight: Math.floor(Math.random()*9)+1});
+      return true;
+    }
+    const visited = new Set([0]);
+    const remaining = Array.from({length:n-1}, (_,i)=>i+1);
+    for(let i=remaining.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [remaining[i], remaining[j]] = [remaining[j], remaining[i]];
+    }
+    remaining.forEach(node => {
+      const visitedArr = Array.from(visited);
+      const parent = visitedArr[Math.floor(Math.random()*visitedArr.length)];
+      addEdge(parent, node);
+      visited.add(node);
+    });
+    const extra = Math.max(1, Math.floor(n*0.6));
+    let attempts = 0, added = 0;
+    while(added < extra && attempts < extra*10){
+      attempts++;
+      const a = Math.floor(Math.random()*n);
+      const b = Math.floor(Math.random()*n);
+      if(addEdge(a,b)) added++;
+    }
+    const newAdj = Array.from({length:n}, ()=>[]);
+    newEdges.forEach(e => {
+      newAdj[e.a].push({to:e.b, weight:e.weight});
+      newAdj[e.b].push({to:e.a, weight:e.weight});
+    });
+    return { nodes:newNodes, edges:newEdges, adj:newAdj };
+  }
+
+  function buildGraphSteps(algo, start){
+    const log = [];
+    let visitedCount = 0, edgeCount = 0;
+    function snapshot(extra){
+      log.push(Object.assign({
+        visitedSet:[], currentNode:null, queue:[], dist:null, finalSet:[],
+        note:"", visitedCount, edgeCount
+      }, extra || {}));
+    }
+
+    if(algo === "bfs"){
+      const visited = new Set([start]);
+      const queue = [start];
+      snapshot({ visitedSet:[start], queue:queue.slice(), note:`시작 노드 ${start}를 큐에 추가` });
+      while(queue.length){
+        const node = queue.shift();
+        visitedCount++;
+        snapshot({ visitedSet:Array.from(visited), currentNode:node, queue:queue.slice(), visitedCount, note:`노드 ${node} 방문 (큐에서 꺼냄)` });
+        const neighbors = adj[node].map(e=>e.to).sort((a,b)=>a-b);
+        for(const next of neighbors){
+          edgeCount++;
+          if(!visited.has(next)){
+            visited.add(next);
+            queue.push(next);
+            snapshot({ visitedSet:Array.from(visited), currentNode:node, queue:queue.slice(), edgeCount, note:`이웃 ${next} 발견 → 큐에 추가` });
+          } else {
+            snapshot({ visitedSet:Array.from(visited), currentNode:node, queue:queue.slice(), edgeCount, note:`이웃 ${next}는 이미 방문함` });
+          }
+        }
+      }
+      snapshot({ visitedSet:Array.from(visited), queue:[], visitedCount, edgeCount, note:"탐색 완료" });
+    }
+
+    else if(algo === "dfs"){
+      const visited = new Set();
+      const stack = [start];
+      snapshot({ visitedSet:[], queue:stack.slice(), note:`시작 노드 ${start}를 스택에 추가` });
+      while(stack.length){
+        const node = stack.pop();
+        if(visited.has(node)){
+          snapshot({ visitedSet:Array.from(visited), currentNode:node, queue:stack.slice(), note:`노드 ${node}는 이미 방문 → 스킵` });
+          continue;
+        }
+        visited.add(node);
+        visitedCount++;
+        snapshot({ visitedSet:Array.from(visited), currentNode:node, queue:stack.slice(), visitedCount, note:`노드 ${node} 방문 (스택에서 꺼냄)` });
+        const neighbors = adj[node].map(e=>e.to).sort((a,b)=>b-a);
+        for(const next of neighbors){
+          edgeCount++;
+          if(!visited.has(next)){
+            stack.push(next);
+            snapshot({ visitedSet:Array.from(visited), currentNode:node, queue:stack.slice(), edgeCount, note:`이웃 ${next}를 스택에 추가` });
+          }
+        }
+      }
+      snapshot({ visitedSet:Array.from(visited), queue:[], visitedCount, edgeCount, note:"탐색 완료" });
+    }
+
+    else if(algo === "dijkstra"){
+      const n = nodes.length;
+      const dist = Array(n).fill(Infinity);
+      dist[start] = 0;
+      const finalized = new Set();
+      snapshot({ dist:dist.slice(), finalSet:[], note:`시작 노드 ${start}의 거리를 0으로 초기화` });
+      while(finalized.size < n){
+        let u = -1, best = Infinity;
+        for(let i=0;i<n;i++) if(!finalized.has(i) && dist[i] < best){ best = dist[i]; u = i; }
+        if(u === -1) break;
+        finalized.add(u);
+        visitedCount++;
+        snapshot({ dist:dist.slice(), finalSet:Array.from(finalized), currentNode:u, visitedCount, note:`거리가 가장 짧은 노드 ${u}(거리 ${dist[u]}) 확정` });
+        const neighbors = adj[u].slice().sort((a,b)=>a.to-b.to);
+        for(const {to, weight} of neighbors){
+          edgeCount++;
+          if(finalized.has(to)) continue;
+          const newDist = dist[u] + weight;
+          if(newDist < dist[to]){
+            const old = dist[to];
+            dist[to] = newDist;
+            snapshot({ dist:dist.slice(), finalSet:Array.from(finalized), currentNode:u, edgeCount, note:`${u}→${to} 경로로 거리 갱신: ${old===Infinity?"∞":old} → ${newDist}` });
+          } else {
+            snapshot({ dist:dist.slice(), finalSet:Array.from(finalized), currentNode:u, edgeCount, note:`${u}→${to}: 기존 거리(${dist[to]})가 더 짧아 갱신 안 함` });
+          }
+        }
+      }
+      snapshot({ dist:dist.slice(), finalSet:Array.from(finalized), visitedCount, edgeCount, note:"모든 노드의 최단 거리 확정 완료" });
+    }
+
+    return log;
+  }
+
+  // ===================================================================
+  // 정렬 렌더링
+  // ===================================================================
   function renderBars(){
     barsEl.innerHTML = "";
     const max = Math.max(...array, 1);
@@ -641,26 +922,22 @@
       const bar = document.createElement("div");
       bar.className = "bar";
       bar.dataset.idx = idx;
-
       const valEl = document.createElement("div");
       valEl.className = "bar-val";
       valEl.textContent = val;
-
       const fill = document.createElement("div");
       fill.className = "bar-fill";
       fill.style.height = (val/max*100) + "%";
-
       bar.appendChild(valEl);
       bar.appendChild(fill);
       barsEl.appendChild(bar);
     });
   }
 
-  function applyStep(step){
+  function applySortStep(step){
     array = step.array;
     const bars = barsEl.children;
-    if(bars.length !== array.length) { renderBars(); }
-
+    if(bars.length !== array.length) renderBars();
     const max = Math.max(...array, 1);
     for(let i=0;i<array.length;i++){
       const bar = bars[i];
@@ -670,23 +947,185 @@
       const valEl = bar.querySelector(".bar-val");
       fill.style.height = (array[i]/max*100) + "%";
       valEl.textContent = array[i];
-
       if(step.doneIdx && step.doneIdx.includes(i)) bar.classList.add("done");
       if(step.compareIdx && step.compareIdx.includes(i)) bar.classList.add("compare");
       if(step.swapIdx && step.swapIdx.includes(i)) bar.classList.add("swap");
     }
-
-    narrationEl.innerHTML = step.note ? `<b>${cur+1}.</b> ${step.note}` : "";
     metaCompareEl.textContent = step.compareCount;
     metaSwapEl.textContent = step.swapCount;
-
-    // 실제 비교 횟수(현재 스텝까지 누적) vs 이론적 예상 비교 횟수(n으로부터 계산)
     const theo = complexityFormula[currentAlgo].calc(array.length);
     metaComplexityEl.textContent = `${step.compareCount} / ${theo} (${complexityFormula[currentAlgo].label})`;
+  }
 
+  // ===================================================================
+  // 그래프 렌더링
+  // ===================================================================
+  let cssCache = {};
+  function getCss(varName){
+    if(cssCache[varName]) return cssCache[varName];
+    const val = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+    cssCache[varName] = val;
+    return val;
+  }
+
+  function nodeColor(id, step){
+    if(currentAlgo === "dijkstra"){
+      if(step.finalSet && step.finalSet.includes(id)) return getCss("--done");
+      if(step.currentNode === id) return getCss("--compare");
+      if(step.dist && step.dist[id] !== Infinity) return getCss("--frontier");
+      return getCss("--ink-soft");
+    }
+    if(step.currentNode === id) return getCss("--compare");
+    if(step.visitedSet && step.visitedSet.includes(id)) return getCss("--done");
+    if(step.queue && step.queue.includes(id)) return getCss("--frontier");
+    return getCss("--ink-soft");
+  }
+
+  function resizeCanvas(){
+    if(category !== "graph") return;
+    const rect = canvas.parentElement.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    drawGraph(steps[cur] || {});
+  }
+
+  function drawGraph(step){
+    const rect = canvas.parentElement.getBoundingClientRect();
+    const W = rect.width, H = rect.height;
+    ctx.clearRect(0,0,W,H);
+    const pad = 46;
+    const toPx = (n) => ({ x: pad + n.x*(W-2*pad), y: pad + n.y*(H-2*pad) });
+
+    edges.forEach(e => {
+      const pa = toPx(nodes[e.a]);
+      const pb = toPx(nodes[e.b]);
+      ctx.beginPath();
+      ctx.moveTo(pa.x, pa.y);
+      ctx.lineTo(pb.x, pb.y);
+      ctx.strokeStyle = getCss("--line");
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      if(currentAlgo === "dijkstra"){
+        const mx = (pa.x+pb.x)/2, my = (pa.y+pb.y)/2;
+        ctx.font = "11px 'IBM Plex Mono', monospace";
+        const txt = String(e.weight);
+        const tw = ctx.measureText(txt).width;
+        ctx.fillStyle = getCss("--paper-deep");
+        ctx.fillRect(mx-tw/2-3, my-8, tw+6, 16);
+        ctx.fillStyle = getCss("--ink-soft");
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(txt, mx, my);
+      }
+    });
+
+    const R = 17;
+    nodes.forEach(n => {
+      const p = toPx(n);
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, R, 0, Math.PI*2);
+      ctx.fillStyle = nodeColor(n.id, step);
+      ctx.fill();
+      if(step.currentNode === n.id){
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = getCss("--ink");
+        ctx.stroke();
+      }
+      ctx.fillStyle = getCss("--paper");
+      ctx.font = "600 13px 'IBM Plex Mono', monospace";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(n.id, p.x, p.y);
+      if(currentAlgo === "dijkstra" && step.dist){
+        const d = step.dist[n.id];
+        const label = d === Infinity ? "∞" : String(d);
+        ctx.font = "600 11px 'IBM Plex Mono', monospace";
+        ctx.fillStyle = getCss("--ink");
+        ctx.fillText(label, p.x, p.y - R - 11);
+      }
+    });
+  }
+
+  function renderQueuePanel(step){
+    if(currentAlgo === "dijkstra"){ queuePanelEl.style.display = "none"; return; }
+    queuePanelEl.style.display = "flex";
+    queueLabelEl.textContent = currentAlgo === "bfs" ? "큐 (앞→뒤)" : "스택 (위→아래)";
+    queueItemsEl.innerHTML = "";
+    const list = step.queue || [];
+    list.forEach((id, idx) => {
+      const chip = document.createElement("span");
+      chip.className = "queue-chip" + (idx===0 ? " head" : "");
+      chip.textContent = id;
+      queueItemsEl.appendChild(chip);
+    });
+    if(list.length === 0){
+      const chip = document.createElement("span");
+      chip.className = "queue-chip";
+      chip.textContent = "비어있음";
+      queueItemsEl.appendChild(chip);
+    }
+  }
+
+  function renderDistPanel(step){
+    if(currentAlgo !== "dijkstra"){ distPanelEl.style.display = "none"; return; }
+    distPanelEl.style.display = "flex";
+    distPanelEl.innerHTML = "";
+    if(!step.dist) return;
+    step.dist.forEach((d, id) => {
+      const chip = document.createElement("span");
+      let cls = "dist-chip";
+      if(step.finalSet && step.finalSet.includes(id)) cls += " final";
+      else if(step.currentNode === id) cls += " updated";
+      chip.className = cls;
+      chip.innerHTML = `노드${id}<b>${d===Infinity?"∞":d}</b>`;
+      distPanelEl.appendChild(chip);
+    });
+  }
+
+  function applyGraphStep(step){
+    drawGraph(step);
+    renderQueuePanel(step);
+    renderDistPanel(step);
+    metaVisitedEl.textContent = step.visitedCount;
+    metaEdgesEl.textContent = step.edgeCount;
+    metaGraphComplexityEl.textContent = graphComplexityLabel[currentAlgo] || "—";
+  }
+
+  // ===================================================================
+  // 설명 박스
+  // ===================================================================
+  function renderExplain(algo){
+    const data = explainData[algo];
+    if(!data) return;
+    explainTitleEl.textContent = data.title;
+    explainBodyEl.textContent = explainMode === "simple" ? data.simple : data.detail;
+    if(explainMode === "detail"){
+      const structOrStable = data.structure
+        ? `<li>자료구조<b>${data.structure}</b></li>`
+        : `<li>안정성<b>${data.stable}</b></li>`;
+      explainMetaEl.innerHTML = `
+        <li>시간복잡도<b>${data.time}</b></li>
+        <li>공간복잡도<b>${data.space}</b></li>
+        ${structOrStable}
+        <li>특징<b>${data.trait}</b></li>
+      `;
+    } else {
+      explainMetaEl.innerHTML = "";
+    }
+  }
+
+  // ===================================================================
+  // 공통 재생 엔진
+  // ===================================================================
+  function applyStep(step){
+    if(category === "sort") applySortStep(step);
+    else applyGraphStep(step);
+
+    narrationEl.innerHTML = step.note ? `<b>${cur+1}.</b> ${step.note}` : "";
     scrubEl.value = cur;
     stepLabelEl.textContent = `${cur+1} / ${steps.length}`;
-
     btnPrev.disabled = cur<=0;
     btnNext.disabled = cur>=steps.length-1;
   }
@@ -698,7 +1137,7 @@
   }
 
   function stepForward(){
-    if(cur < steps.length-1){ goTo(cur+1); }
+    if(cur < steps.length-1) goTo(cur+1);
     else stopPlay();
   }
 
@@ -709,9 +1148,9 @@
     const tick = () => {
       stepForward();
       if(playing && cur<steps.length-1){
-        const speedVal = Number(speedEl.value); // 1~10
-        const delay = 600 - speedVal*50; // 빠를수록 짧게
-        timer = setTimeout(tick, Math.max(40, delay));
+        const speedVal = Number(speedEl.value);
+        const delay = 650 - speedVal*55;
+        timer = setTimeout(tick, Math.max(45, delay));
       } else {
         stopPlay();
       }
@@ -725,48 +1164,106 @@
     if(timer) clearTimeout(timer);
   }
 
-  function renderExplain(algo){
-    const data = explainData[algo];
-    if(!data) return;
-    explainTitleEl.textContent = data.title;
-    explainBodyEl.textContent = explainMode === "simple" ? data.simple : data.detail;
+  // ===================================================================
+  // 카테고리 / 알고리즘 전환
+  // ===================================================================
+  function renderAlgoTabs(){
+    algoTabsEl.innerHTML = "";
+    algoList[category].forEach((a, idx) => {
+      const btn = document.createElement("button");
+      btn.className = "algo-tab" + (idx===0 ? " active" : "");
+      btn.dataset.algo = a.key;
+      btn.textContent = a.label;
+      btn.addEventListener("click", () => {
+        algoTabsEl.querySelectorAll(".algo-tab").forEach(t=>t.classList.remove("active"));
+        btn.classList.add("active");
+        rebuild(a.key);
+      });
+      algoTabsEl.appendChild(btn);
+    });
+  }
 
-    if(explainMode === "detail"){
-      explainMetaEl.innerHTML = `
-        <li>시간복잡도<b>${data.time}</b></li>
-        <li>공간복잡도<b>${data.space}</b></li>
-        <li>안정성<b>${data.stable}</b></li>
-        <li>특징<b>${data.trait}</b></li>
-      `;
+  function switchCategory(cat){
+    category = cat;
+    document.querySelectorAll(".category-tab").forEach(t=>{
+      t.classList.toggle("active", t.dataset.category === cat);
+    });
+
+    if(cat === "sort"){
+      pageTitleEl.textContent = "정렬 알고리즘 시각화";
+      barsEl.style.display = "flex";
+      graphAreaEl.style.display = "none";
+      metaRowSortEl.style.display = "flex";
+      metaRowGraphEl.style.display = "none";
+      sizeLabelEl.textContent = "배열 크기";
+      sizeInputEl.min = 5; sizeInputEl.max = 40; sizeInputEl.value = 20;
+      currentAlgo = "bubble";
     } else {
-      explainMetaEl.innerHTML = "";
+      pageTitleEl.textContent = "그래프 탐색 알고리즘 시각화";
+      barsEl.style.display = "none";
+      graphAreaEl.style.display = "block";
+      metaRowSortEl.style.display = "none";
+      metaRowGraphEl.style.display = "flex";
+      sizeLabelEl.textContent = "노드 개수";
+      sizeInputEl.min = 5; sizeInputEl.max = 14; sizeInputEl.value = 9;
+      currentAlgo = "bfs";
+    }
+
+    renderAlgoTabs();
+
+    if(cat === "sort"){
+      array = genArray(Number(sizeInputEl.value));
+      rebuild(currentAlgo);
+    } else {
+      const g = genGraph(Number(sizeInputEl.value));
+      nodes = g.nodes; edges = g.edges; adj = g.adj;
+      startNode = 0;
+      rebuild(currentAlgo);
+      resizeCanvas();
     }
   }
 
   function rebuild(algo){
     currentAlgo = algo;
     stopPlay();
-    steps = buildSteps(algo, array);
+    if(category === "sort"){
+      steps = buildSortSteps(algo, array);
+    } else {
+      steps = buildGraphSteps(algo, startNode);
+    }
     cur = 0;
     scrubEl.max = steps.length-1;
-    renderBars();
+    renderBars_or_draw();
     applyStep(steps[0]);
     renderExplain(algo);
   }
 
-  function newArray(){
-    const n = Math.max(5, Math.min(40, Number(sizeInputEl.value) || 20));
-    array = genArray(n);
-    rebuild(currentAlgo);
+  function renderBars_or_draw(){
+    if(category === "sort"){
+      renderBars();
+    }
+    // 그래프는 applyStep -> applyGraphStep -> drawGraph에서 처리됨
   }
 
-  // ---------- 이벤트 ----------
-  document.querySelectorAll(".algo-tab").forEach(tab => {
-    tab.addEventListener("click", () => {
-      document.querySelectorAll(".algo-tab").forEach(t=>t.classList.remove("active"));
-      tab.classList.add("active");
-      rebuild(tab.dataset.algo);
-    });
+  function regenerate(){
+    if(category === "sort"){
+      const n = Math.max(5, Math.min(40, Number(sizeInputEl.value) || 20));
+      array = genArray(n);
+      rebuild(currentAlgo);
+    } else {
+      const n = Math.max(5, Math.min(14, Number(sizeInputEl.value) || 9));
+      const g = genGraph(n);
+      nodes = g.nodes; edges = g.edges; adj = g.adj;
+      startNode = 0;
+      rebuild(currentAlgo);
+    }
+  }
+
+  // ===================================================================
+  // 이벤트
+  // ===================================================================
+  document.querySelectorAll(".category-tab").forEach(tab => {
+    tab.addEventListener("click", () => switchCategory(tab.dataset.category));
   });
 
   document.querySelectorAll(".explain-toggle-btn").forEach(btn => {
@@ -782,8 +1279,27 @@
   btnPrev.addEventListener("click", () => { stopPlay(); goTo(cur-1); });
   btnNext.addEventListener("click", () => { stopPlay(); goTo(cur+1); });
   btnReset.addEventListener("click", () => { stopPlay(); goTo(0); });
-  btnShuffle.addEventListener("click", newArray);
+  btnShuffle.addEventListener("click", regenerate);
   scrubEl.addEventListener("input", (e) => { stopPlay(); goTo(Number(e.target.value)); });
+
+  canvas.addEventListener("click", (e) => {
+    if(category !== "graph") return;
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left);
+    const y = (e.clientY - rect.top);
+    const pad = 46;
+    const W = rect.width, H = rect.height;
+    let clickedId = null;
+    nodes.forEach(n => {
+      const px = pad + n.x*(W-2*pad);
+      const py = pad + n.y*(H-2*pad);
+      if(Math.hypot(px-x, py-y) <= 17){ clickedId = n.id; }
+    });
+    if(clickedId !== null && clickedId !== startNode){
+      startNode = clickedId;
+      rebuild(currentAlgo);
+    }
+  });
 
   document.addEventListener("keydown", (e) => {
     if(e.target.tagName === "INPUT") return;
@@ -792,7 +1308,12 @@
     if(e.code === "ArrowLeft"){ stopPlay(); goTo(cur-1); }
   });
 
-  // ---------- 초기화 ----------
+  window.addEventListener("resize", resizeCanvas);
+
+  // ===================================================================
+  // 초기화
+  // ===================================================================
+  renderAlgoTabs();
   array = genArray(20);
   rebuild("bubble");
 })();
