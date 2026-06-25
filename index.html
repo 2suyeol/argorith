@@ -284,6 +284,48 @@
     border-color:var(--compare);
   }
 
+  .code-box{
+    margin-top:18px;
+    background:var(--ink);
+    border-radius:10px;
+    padding:14px 16px 16px;
+  }
+  .code-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:10px;
+  }
+  .code-title{
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--paper);
+    opacity:.7;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+  }
+  .code-pre{
+    margin:0;
+    font-family:var(--mono);
+    font-size:13px;
+    line-height:1.85;
+    color:#D7CFC0;
+    overflow-x:auto;
+    white-space:pre;
+  }
+  .code-line{
+    display:block;
+    padding:1px 8px;
+    border-radius:4px;
+    white-space:pre;
+  }
+  .code-line.active{
+    background:var(--compare);
+    color:var(--ink);
+    font-weight:600;
+  }
+
   .narration{
     margin-top:16px;
     font-size:14px;
@@ -443,6 +485,17 @@
     </div>
     <div class="dist-panel" id="distPanel" style="display:none;"></div>
 
+    <div class="code-box">
+      <div class="code-head">
+        <span class="code-title">코드</span>
+        <div class="explain-toggle" role="tablist" aria-label="코드 형태 선택">
+          <button class="explain-toggle-btn active" data-codemode="pseudo">의사코드</button>
+          <button class="explain-toggle-btn" data-codemode="real">실제 코드</button>
+        </div>
+      </div>
+      <pre class="code-pre" id="codePre"></pre>
+    </div>
+
     <div class="narration" id="narration">재생을 눌러 시작하세요.</div>
 
     <div class="controls">
@@ -536,6 +589,7 @@
   const explainTitleEl = document.getElementById("explainTitle");
   const explainBodyEl = document.getElementById("explainBody");
   const explainMetaEl = document.getElementById("explainMeta");
+  const codePreEl = document.getElementById("codePre");
 
   const btnPlay = document.getElementById("btnPlay");
   const btnPrev = document.getElementById("btnPrev");
@@ -560,6 +614,186 @@
       { key:"dijkstra", label:"다익스트라" }
     ]
   };
+
+  // 알고리즘별 코드 (의사코드 + 실제 JS) - 줄 단위 배열, codeLine 인덱스와 매칭
+  const codeData = {
+    bubble: {
+      pseudo: [
+        "for i from 0 to n-2:",
+        "  for j from 0 to n-2-i:",
+        "    if arr[j] > arr[j+1]:",
+        "      swap(arr[j], arr[j+1])",
+        "  # i번째 끝에서부터 자리 확정"
+      ],
+      real: [
+        "for (let i = 0; i < n - 1; i++) {",
+        "  for (let j = 0; j < n - 1 - i; j++) {",
+        "    if (arr[j] > arr[j+1]) {",
+        "      [arr[j], arr[j+1]] = [arr[j+1], arr[j]];",
+        "    }",
+        "  }",
+        "}"
+      ]
+    },
+    selection: {
+      pseudo: [
+        "for i from 0 to n-1:",
+        "  minIdx = i",
+        "  for j from i+1 to n-1:",
+        "    if arr[j] < arr[minIdx]:",
+        "      minIdx = j",
+        "  swap(arr[i], arr[minIdx])"
+      ],
+      real: [
+        "for (let i = 0; i < n; i++) {",
+        "  let minIdx = i;",
+        "  for (let j = i + 1; j < n; j++) {",
+        "    if (arr[j] < arr[minIdx]) minIdx = j;",
+        "  }",
+        "  [arr[i], arr[minIdx]] = [arr[minIdx], arr[i]];",
+        "}"
+      ]
+    },
+    insertion: {
+      pseudo: [
+        "for i from 1 to n-1:",
+        "  j = i",
+        "  while j > 0 and arr[j-1] > arr[j]:",
+        "    swap(arr[j-1], arr[j])",
+        "    j = j - 1"
+      ],
+      real: [
+        "for (let i = 1; i < n; i++) {",
+        "  let j = i;",
+        "  while (j > 0 && arr[j-1] > arr[j]) {",
+        "    [arr[j-1], arr[j]] = [arr[j], arr[j-1]];",
+        "    j--;",
+        "  }",
+        "}"
+      ]
+    },
+    quick: {
+      pseudo: [
+        "function quickSort(lo, hi):",
+        "  if lo >= hi: return",
+        "  pivot = arr[hi]",
+        "  i = lo",
+        "  for j from lo to hi-1:",
+        "    if arr[j] < pivot:",
+        "      swap(arr[i], arr[j]); i++",
+        "  swap(arr[i], arr[hi])  # 피벗 확정",
+        "  quickSort(lo, i-1)",
+        "  quickSort(i+1, hi)"
+      ],
+      real: [
+        "function qsort(lo, hi) {",
+        "  if (lo >= hi) return;",
+        "  const pivot = arr[hi];",
+        "  let i = lo;",
+        "  for (let j = lo; j < hi; j++) {",
+        "    if (arr[j] < pivot) {",
+        "      [arr[i], arr[j]] = [arr[j], arr[i]]; i++;",
+        "    }",
+        "  }",
+        "  [arr[i], arr[hi]] = [arr[hi], arr[i]];",
+        "  qsort(lo, i - 1);",
+        "  qsort(i + 1, hi);",
+        "}"
+      ]
+    },
+    merge: {
+      pseudo: [
+        "function mergeSort(lo, hi):",
+        "  if lo >= hi: return",
+        "  mid = (lo+hi)/2",
+        "  mergeSort(lo, mid)",
+        "  mergeSort(mid+1, hi)",
+        "  merge(lo, mid, hi)  # 두 구간 병합"
+      ],
+      real: [
+        "function mergeSort(lo, hi) {",
+        "  if (lo >= hi) return;",
+        "  const mid = Math.floor((lo+hi)/2);",
+        "  mergeSort(lo, mid);",
+        "  mergeSort(mid+1, hi);",
+        "  merge(lo, mid, hi);",
+        "}"
+      ]
+    },
+    bfs: {
+      pseudo: [
+        "queue = [start]; visited = {start}",
+        "while queue is not empty:",
+        "  node = queue.dequeue()",
+        "  for next in neighbors(node):",
+        "    if next not in visited:",
+        "      visited.add(next)",
+        "      queue.enqueue(next)"
+      ],
+      real: [
+        "const visited = new Set([start]);",
+        "const queue = [start];",
+        "while (queue.length) {",
+        "  const node = queue.shift();",
+        "  for (const next of neighbors(node)) {",
+        "    if (!visited.has(next)) {",
+        "      visited.add(next);",
+        "      queue.push(next);",
+        "    }",
+        "  }",
+        "}"
+      ]
+    },
+    dfs: {
+      pseudo: [
+        "stack = [start]; visited = {}",
+        "while stack is not empty:",
+        "  node = stack.pop()",
+        "  if node in visited: continue",
+        "  visited.add(node)",
+        "  for next in neighbors(node):",
+        "    if next not in visited:",
+        "      stack.push(next)"
+      ],
+      real: [
+        "const visited = new Set();",
+        "const stack = [start];",
+        "while (stack.length) {",
+        "  const node = stack.pop();",
+        "  if (visited.has(node)) continue;",
+        "  visited.add(node);",
+        "  for (const next of neighbors(node)) {",
+        "    if (!visited.has(next)) stack.push(next);",
+        "  }",
+        "}"
+      ]
+    },
+    dijkstra: {
+      pseudo: [
+        "dist[start] = 0; others = ∞",
+        "while not all finalized:",
+        "  u = node with smallest dist (not finalized)",
+        "  finalize(u)",
+        "  for (v, weight) in neighbors(u):",
+        "    if dist[u] + weight < dist[v]:",
+        "      dist[v] = dist[u] + weight  # 완화"
+      ],
+      real: [
+        "const dist = Array(n).fill(Infinity);",
+        "dist[start] = 0;",
+        "while (finalized.size < n) {",
+        "  const u = nodeWithSmallestDist();",
+        "  finalized.add(u);",
+        "  for (const {to, weight} of adj[u]) {",
+        "    if (dist[u] + weight < dist[to]) {",
+        "      dist[to] = dist[u] + weight;",
+        "    }",
+        "  }",
+        "}"
+      ]
+    }
+  };
+  let codeMode = "pseudo"; // "pseudo" | "real"
 
   const explainData = {
     bubble: {
@@ -658,15 +892,15 @@
       for(let i=0;i<n-1;i++){
         for(let j=0;j<n-1-i;j++){
           compareCount++;
-          snapshot({compareIdx:[j,j+1], doneIdx: done.slice(), note: `${arr[j]}와 ${arr[j+1]} 비교`});
+          snapshot({compareIdx:[j,j+1], doneIdx: done.slice(), codeLine:2, note: `${arr[j]}와 ${arr[j+1]} 비교`});
           if(arr[j] > arr[j+1]){
             [arr[j], arr[j+1]] = [arr[j+1], arr[j]];
             swapCount++;
-            snapshot({swapIdx:[j,j+1], doneIdx: done.slice(), note: `${arr[j+1]} > ${arr[j]} → 교환`});
+            snapshot({swapIdx:[j,j+1], doneIdx: done.slice(), codeLine:3, note: `${arr[j+1]} > ${arr[j]} → 교환`});
           }
         }
         done.unshift(n-1-i);
-        snapshot({doneIdx: done.slice(), note: `${n-1-i}번째 자리 확정`});
+        snapshot({doneIdx: done.slice(), codeLine:4, note: `${n-1-i}번째 자리 확정`});
       }
       snapshot({doneIdx: Array.from({length:n}, (_,k)=>k), note:"정렬 완료"});
     }
@@ -676,19 +910,19 @@
       const done = [];
       for(let i=0;i<n;i++){
         let minIdx = i;
-        snapshot({compareIdx:[i], doneIdx: done.slice(), note:`구간 [${i}, ${n-1}]에서 최솟값 탐색 시작`});
+        snapshot({compareIdx:[i], doneIdx: done.slice(), codeLine:1, note:`구간 [${i}, ${n-1}]에서 최솟값 탐색 시작`});
         for(let j=i+1;j<n;j++){
           compareCount++;
-          snapshot({compareIdx:[minIdx,j], doneIdx: done.slice(), note:`최소값 후보 ${arr[minIdx]} vs ${arr[j]}`});
+          snapshot({compareIdx:[minIdx,j], doneIdx: done.slice(), codeLine:3, note:`최소값 후보 ${arr[minIdx]} vs ${arr[j]}`});
           if(arr[j] < arr[minIdx]) minIdx = j;
         }
         if(minIdx !== i){
           [arr[i], arr[minIdx]] = [arr[minIdx], arr[i]];
           swapCount++;
-          snapshot({swapIdx:[i,minIdx], doneIdx: done.slice(), note:`최솟값 ${arr[i]}을 ${i}번 위치로 교환`});
+          snapshot({swapIdx:[i,minIdx], doneIdx: done.slice(), codeLine:5, note:`최솟값 ${arr[i]}을 ${i}번 위치로 교환`});
         }
         done.push(i);
-        snapshot({doneIdx: done.slice(), note:`${i}번째 자리 확정`});
+        snapshot({doneIdx: done.slice(), codeLine:0, note:`${i}번째 자리 확정`});
       }
     }
 
@@ -697,18 +931,18 @@
       snapshot({doneIdx:[0], note:"첫 원소는 정렬된 것으로 간주"});
       for(let i=1;i<n;i++){
         let j = i;
-        snapshot({compareIdx:[j], doneIdx: Array.from({length:i}, (_,k)=>k), note:`${arr[i]}를 삽입할 위치 탐색`});
+        snapshot({compareIdx:[j], doneIdx: Array.from({length:i}, (_,k)=>k), codeLine:1, note:`${arr[i]}를 삽입할 위치 탐색`});
         while(j>0){
           compareCount++;
-          snapshot({compareIdx:[j-1,j], doneIdx: Array.from({length:i}, (_,k)=>k), note:`${arr[j-1]}와 ${arr[j]} 비교`});
+          snapshot({compareIdx:[j-1,j], doneIdx: Array.from({length:i}, (_,k)=>k), codeLine:2, note:`${arr[j-1]}와 ${arr[j]} 비교`});
           if(arr[j-1] > arr[j]){
             [arr[j-1], arr[j]] = [arr[j], arr[j-1]];
             swapCount++;
-            snapshot({swapIdx:[j-1,j], doneIdx: Array.from({length:i}, (_,k)=>k), note:"왼쪽으로 한 칸 이동"});
+            snapshot({swapIdx:[j-1,j], doneIdx: Array.from({length:i}, (_,k)=>k), codeLine:3, note:"왼쪽으로 한 칸 이동"});
             j--;
           } else break;
         }
-        snapshot({doneIdx: Array.from({length:i+1}, (_,k)=>k), note:`${i}번째까지 정렬 상태 유지`});
+        snapshot({doneIdx: Array.from({length:i+1}, (_,k)=>k), codeLine:0, note:`${i}번째까지 정렬 상태 유지`});
       }
     }
 
@@ -716,24 +950,24 @@
       function partition(lo, hi){
         const pivot = arr[hi];
         let i = lo;
-        snapshot({compareIdx:[hi], doneIdx:[], note:`피벗 ${pivot} 선택 (구간 [${lo},${hi}])`});
+        snapshot({compareIdx:[hi], doneIdx:[], codeLine:2, note:`피벗 ${pivot} 선택 (구간 [${lo},${hi}])`});
         for(let j=lo;j<hi;j++){
           compareCount++;
-          snapshot({compareIdx:[j,hi], doneIdx:[], note:`${arr[j]} vs 피벗 ${pivot}`});
+          snapshot({compareIdx:[j,hi], doneIdx:[], codeLine:5, note:`${arr[j]} vs 피벗 ${pivot}`});
           if(arr[j] < pivot){
             [arr[i], arr[j]] = [arr[j], arr[i]];
-            if(i!==j){ swapCount++; snapshot({swapIdx:[i,j], doneIdx:[], note:"피벗보다 작은 값 앞으로 이동"}); }
+            if(i!==j){ swapCount++; snapshot({swapIdx:[i,j], doneIdx:[], codeLine:6, note:"피벗보다 작은 값 앞으로 이동"}); }
             i++;
           }
         }
         [arr[i], arr[hi]] = [arr[hi], arr[i]];
         swapCount++;
-        snapshot({swapIdx:[i,hi], doneIdx:[], note:`피벗을 ${i}번 위치로 확정`});
+        snapshot({swapIdx:[i,hi], doneIdx:[], codeLine:7, note:`피벗을 ${i}번 위치로 확정`});
         return i;
       }
       function qsort(lo, hi){
         if(lo>=hi){
-          if(lo===hi) snapshot({doneIdx:[lo], note:"단일 원소 구간 확정"});
+          if(lo===hi) snapshot({doneIdx:[lo], codeLine:1, note:"단일 원소 구간 확정"});
           return;
         }
         const p = partition(lo, hi);
@@ -754,18 +988,18 @@
         const left = arr.slice(lo, mid+1);
         const right = arr.slice(mid+1, hi+1);
         let i=0,j=0,k=lo;
-        snapshot({compareIdx:[lo, hi], doneIdx:[], note:`[${lo},${mid}]와 [${mid+1},${hi}] 병합 시작`});
+        snapshot({compareIdx:[lo, hi], doneIdx:[], codeLine:5, note:`[${lo},${mid}]와 [${mid+1},${hi}] 병합 시작`});
         while(i<left.length && j<right.length){
           compareCount++;
-          snapshot({compareIdx:[k], doneIdx:[], note:`${left[i]} vs ${right[j]} 비교`});
+          snapshot({compareIdx:[k], doneIdx:[], codeLine:5, note:`${left[i]} vs ${right[j]} 비교`});
           if(left[i] <= right[j]){ arr[k]=left[i]; i++; }
           else { arr[k]=right[j]; j++; }
           swapCount++;
-          snapshot({swapIdx:[k], doneIdx:[], note:`${arr[k]} 배치`});
+          snapshot({swapIdx:[k], doneIdx:[], codeLine:5, note:`${arr[k]} 배치`});
           k++;
         }
-        while(i<left.length){ arr[k]=left[i]; snapshot({swapIdx:[k], doneIdx:[], note:`${arr[k]} 배치`}); i++; k++; }
-        while(j<right.length){ arr[k]=right[j]; snapshot({swapIdx:[k], doneIdx:[], note:`${arr[k]} 배치`}); j++; k++; }
+        while(i<left.length){ arr[k]=left[i]; snapshot({swapIdx:[k], doneIdx:[], codeLine:5, note:`${arr[k]} 배치`}); i++; k++; }
+        while(j<right.length){ arr[k]=right[j]; snapshot({swapIdx:[k], doneIdx:[], codeLine:5, note:`${arr[k]} 배치`}); j++; k++; }
       }
       mergeSort(0, n-1);
       snapshot({doneIdx: Array.from({length:n}, (_,k)=>k), note:"정렬 완료"});
@@ -834,20 +1068,20 @@
     if(algo === "bfs"){
       const visited = new Set([start]);
       const queue = [start];
-      snapshot({ visitedSet:[start], queue:queue.slice(), note:`시작 노드 ${start}를 큐에 추가` });
+      snapshot({ visitedSet:[start], queue:queue.slice(), codeLine:0, note:`시작 노드 ${start}를 큐에 추가` });
       while(queue.length){
         const node = queue.shift();
         visitedCount++;
-        snapshot({ visitedSet:Array.from(visited), currentNode:node, queue:queue.slice(), visitedCount, note:`노드 ${node} 방문 (큐에서 꺼냄)` });
+        snapshot({ visitedSet:Array.from(visited), currentNode:node, queue:queue.slice(), visitedCount, codeLine:2, note:`노드 ${node} 방문 (큐에서 꺼냄)` });
         const neighbors = adj[node].map(e=>e.to).sort((a,b)=>a-b);
         for(const next of neighbors){
           edgeCount++;
           if(!visited.has(next)){
             visited.add(next);
             queue.push(next);
-            snapshot({ visitedSet:Array.from(visited), currentNode:node, queue:queue.slice(), edgeCount, note:`이웃 ${next} 발견 → 큐에 추가` });
+            snapshot({ visitedSet:Array.from(visited), currentNode:node, queue:queue.slice(), edgeCount, codeLine:6, note:`이웃 ${next} 발견 → 큐에 추가` });
           } else {
-            snapshot({ visitedSet:Array.from(visited), currentNode:node, queue:queue.slice(), edgeCount, note:`이웃 ${next}는 이미 방문함` });
+            snapshot({ visitedSet:Array.from(visited), currentNode:node, queue:queue.slice(), edgeCount, codeLine:4, note:`이웃 ${next}는 이미 방문함` });
           }
         }
       }
@@ -857,22 +1091,22 @@
     else if(algo === "dfs"){
       const visited = new Set();
       const stack = [start];
-      snapshot({ visitedSet:[], queue:stack.slice(), note:`시작 노드 ${start}를 스택에 추가` });
+      snapshot({ visitedSet:[], queue:stack.slice(), codeLine:0, note:`시작 노드 ${start}를 스택에 추가` });
       while(stack.length){
         const node = stack.pop();
         if(visited.has(node)){
-          snapshot({ visitedSet:Array.from(visited), currentNode:node, queue:stack.slice(), note:`노드 ${node}는 이미 방문 → 스킵` });
+          snapshot({ visitedSet:Array.from(visited), currentNode:node, queue:stack.slice(), codeLine:3, note:`노드 ${node}는 이미 방문 → 스킵` });
           continue;
         }
         visited.add(node);
         visitedCount++;
-        snapshot({ visitedSet:Array.from(visited), currentNode:node, queue:stack.slice(), visitedCount, note:`노드 ${node} 방문 (스택에서 꺼냄)` });
+        snapshot({ visitedSet:Array.from(visited), currentNode:node, queue:stack.slice(), visitedCount, codeLine:4, note:`노드 ${node} 방문 (스택에서 꺼냄)` });
         const neighbors = adj[node].map(e=>e.to).sort((a,b)=>b-a);
         for(const next of neighbors){
           edgeCount++;
           if(!visited.has(next)){
             stack.push(next);
-            snapshot({ visitedSet:Array.from(visited), currentNode:node, queue:stack.slice(), edgeCount, note:`이웃 ${next}를 스택에 추가` });
+            snapshot({ visitedSet:Array.from(visited), currentNode:node, queue:stack.slice(), edgeCount, codeLine:7, note:`이웃 ${next}를 스택에 추가` });
           }
         }
       }
@@ -884,14 +1118,14 @@
       const dist = Array(n).fill(Infinity);
       dist[start] = 0;
       const finalized = new Set();
-      snapshot({ dist:dist.slice(), finalSet:[], note:`시작 노드 ${start}의 거리를 0으로 초기화` });
+      snapshot({ dist:dist.slice(), finalSet:[], codeLine:0, note:`시작 노드 ${start}의 거리를 0으로 초기화` });
       while(finalized.size < n){
         let u = -1, best = Infinity;
         for(let i=0;i<n;i++) if(!finalized.has(i) && dist[i] < best){ best = dist[i]; u = i; }
         if(u === -1) break;
         finalized.add(u);
         visitedCount++;
-        snapshot({ dist:dist.slice(), finalSet:Array.from(finalized), currentNode:u, visitedCount, note:`거리가 가장 짧은 노드 ${u}(거리 ${dist[u]}) 확정` });
+        snapshot({ dist:dist.slice(), finalSet:Array.from(finalized), currentNode:u, visitedCount, codeLine:3, note:`거리가 가장 짧은 노드 ${u}(거리 ${dist[u]}) 확정` });
         const neighbors = adj[u].slice().sort((a,b)=>a.to-b.to);
         for(const {to, weight} of neighbors){
           edgeCount++;
@@ -900,9 +1134,9 @@
           if(newDist < dist[to]){
             const old = dist[to];
             dist[to] = newDist;
-            snapshot({ dist:dist.slice(), finalSet:Array.from(finalized), currentNode:u, edgeCount, note:`${u}→${to} 경로로 거리 갱신: ${old===Infinity?"∞":old} → ${newDist}` });
+            snapshot({ dist:dist.slice(), finalSet:Array.from(finalized), currentNode:u, edgeCount, codeLine:6, note:`${u}→${to} 경로로 거리 갱신: ${old===Infinity?"∞":old} → ${newDist}` });
           } else {
-            snapshot({ dist:dist.slice(), finalSet:Array.from(finalized), currentNode:u, edgeCount, note:`${u}→${to}: 기존 거리(${dist[to]})가 더 짧아 갱신 안 함` });
+            snapshot({ dist:dist.slice(), finalSet:Array.from(finalized), currentNode:u, edgeCount, codeLine:5, note:`${u}→${to}: 기존 거리(${dist[to]})가 더 짧아 갱신 안 함` });
           }
         }
       }
@@ -1117,12 +1351,40 @@
   }
 
   // ===================================================================
+  // 코드 패널 (의사코드 / 실제 코드 + 실행 줄 하이라이트)
+  // ===================================================================
+  function renderCode(algo){
+    const data = codeData[algo];
+    if(!data) return;
+    const lines = codeMode === "pseudo" ? data.pseudo : data.real;
+    codePreEl.innerHTML = lines.map((line, idx) =>
+      `<span class="code-line" data-line="${idx}">${escapeHtml(line)}</span>`
+    ).join("\n");
+  }
+
+  function escapeHtml(str){
+    return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+
+  function highlightCodeLine(lineIdx){
+    const allLines = codePreEl.querySelectorAll(".code-line");
+    allLines.forEach(el => el.classList.remove("active"));
+    if(lineIdx === undefined || lineIdx === null) return;
+    const target = codePreEl.querySelector(`.code-line[data-line="${lineIdx}"]`);
+    if(target){
+      target.classList.add("active");
+      target.scrollIntoView ? null : null; // pre 내부 스크롤은 CSS overflow로 처리, 줄 수가 적어 보통 불필요
+    }
+  }
+
+  // ===================================================================
   // 공통 재생 엔진
   // ===================================================================
   function applyStep(step){
     if(category === "sort") applySortStep(step);
     else applyGraphStep(step);
 
+    highlightCodeLine(step.codeLine);
     narrationEl.innerHTML = step.note ? `<b>${cur+1}.</b> ${step.note}` : "";
     scrubEl.value = cur;
     stepLabelEl.textContent = `${cur+1} / ${steps.length}`;
@@ -1234,6 +1496,7 @@
     cur = 0;
     scrubEl.max = steps.length-1;
     renderBars_or_draw();
+    renderCode(algo);
     applyStep(steps[0]);
     renderExplain(algo);
   }
@@ -1266,12 +1529,22 @@
     tab.addEventListener("click", () => switchCategory(tab.dataset.category));
   });
 
-  document.querySelectorAll(".explain-toggle-btn").forEach(btn => {
+  document.querySelectorAll(".explain-toggle-btn[data-mode]").forEach(btn => {
     btn.addEventListener("click", () => {
-      document.querySelectorAll(".explain-toggle-btn").forEach(b=>b.classList.remove("active"));
+      document.querySelectorAll(".explain-toggle-btn[data-mode]").forEach(b=>b.classList.remove("active"));
       btn.classList.add("active");
       explainMode = btn.dataset.mode;
       renderExplain(currentAlgo);
+    });
+  });
+
+  document.querySelectorAll(".explain-toggle-btn[data-codemode]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".explain-toggle-btn[data-codemode]").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      codeMode = btn.dataset.codemode;
+      renderCode(currentAlgo);
+      highlightCodeLine(steps[cur] ? steps[cur].codeLine : undefined);
     });
   });
 
