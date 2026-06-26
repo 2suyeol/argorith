@@ -1220,6 +1220,67 @@
     dsNarrate(`${val}은 트리에 없습니다`);
   }
 
+  // 노드를 삭제하면서 지나간 경로(path)를 함께 추적해 강조 표시에 사용
+  function dsTreeDelete(val){
+    const st = dsState.tree;
+    st.opCount++;
+    const path = [];
+
+    function findMin(node){
+      while(node.left) node = node.left;
+      return node;
+    }
+
+    function removeNode(node, val){
+      if(node === null) return null;
+      path.push(node.value);
+
+      if(val < node.value){
+        node.left = removeNode(node.left, val);
+        return node;
+      }
+      if(val > node.value){
+        node.right = removeNode(node.right, val);
+        return node;
+      }
+
+      // val === node.value : 이 노드를 삭제해야 함
+      if(node.left === null && node.right === null){
+        // 경우 1: 자식이 없음 -> 그냥 제거
+        return null;
+      }
+      if(node.left === null){
+        // 경우 2: 오른쪽 자식만 있음 -> 오른쪽 자식을 끌어올림
+        return node.right;
+      }
+      if(node.right === null){
+        // 경우 2: 왼쪽 자식만 있음 -> 왼쪽 자식을 끌어올림
+        return node.left;
+      }
+      // 경우 3: 자식이 둘 -> 오른쪽 서브트리에서 가장 작은 값을 가져와 대체
+      const successor = findMin(node.right);
+      node.value = successor.value;
+      node.right = removeNode(node.right, successor.value);
+      return node;
+    }
+
+    const existed = (function has(node){
+      if(!node) return false;
+      if(node.value === val) return true;
+      return val < node.value ? has(node.left) : has(node.right);
+    })(st.tree);
+
+    if(!existed){
+      st.lastFound = [];
+      dsNarrate(`${val}은 트리에 없어 삭제할 수 없습니다`);
+      return;
+    }
+
+    st.tree = removeNode(st.tree, val);
+    st.lastFound = [];
+    dsNarrate(`${val}을 트리에서 삭제했습니다`);
+  }
+
   // ---- 렌더링 ----
   function renderDsStack(){
     const view = document.getElementById("dsView");
@@ -1495,6 +1556,11 @@
         const v = Number(input.value);
         if(Number.isNaN(v) || input.value.trim()==="") { dsNarrate("숫자를 입력해주세요"); return; }
         dsTreeFind(v); input.value=""; renderDsView();
+      }));
+      controlsEl.appendChild(makeBtn("삭제", () => {
+        const v = Number(input.value);
+        if(Number.isNaN(v) || input.value.trim()==="") { dsNarrate("숫자를 입력해주세요"); return; }
+        dsTreeDelete(v); input.value=""; renderDsView();
       }));
     }
   }
